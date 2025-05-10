@@ -1,2 +1,3 @@
 # config.py
-TOKEN = "MTM2OTM3OTcwODQyODQ4ODc4NQ.G_SVRr.uUj2Es1UqpG3ddJ9CWf5SOwq14G-hvUVhJYMhw"
+TOKEN = ""
+MONGO_URI = "mongodb+srv://usuario:contraseña@cluster.mongodb.net/silverkoi?retryWrites=true&w=majority"

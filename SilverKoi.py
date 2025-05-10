@@ -2,34 +2,41 @@ import discord
 from discord.ext import commands
 import os
 import asyncio
-from cogs.economy.koins import get_balance, add_koins, ensure_user
 
+# Configuración de intents
 intents = discord.Intents.default()
 intents.message_content = True
 
-bot = commands.Bot(command_prefix=commands.when_mentioned_or("sk/", "&"), intents=intents)
+# Inicialización del bot
+bot = commands.Bot(
+    command_prefix=commands.when_mentioned_or("sk/", "&"),
+    intents=intents,
+    help_command=None
+)
 
 @bot.event
 async def on_ready():
     print(f"✅ Silver Koi está conectado como {bot.user}")
-
-@bot.command()
-async def balance(ctx):
-    ensure_user(str(ctx.author.id))
-    balance = get_balance(str(ctx.author.id))
-    await ctx.send(f"💰 {ctx.author.display_name}, tienes {balance} koins.")
-
-@bot.command()
-async def add(ctx, amount: int):
-    ensure_user(str(ctx.author.id))
-    add_koins(str(ctx.author.id), amount)
-    await ctx.send(f"✅ Se te agregaron {amount} koins.")
+    await bot.change_presence(activity=discord.Game(name="sk/help"))
 
 async def load_cogs():
-    for folder in ["drops", "economy", "gambling"]:
-        for filename in os.listdir(f'./{folder}'):
-            if filename.endswith('.py'):
-                await bot.load_extension(f'{folder}.{filename[:-3]}')
+    """Carga todos los módulos desde la carpeta cogs"""
+    for filename in os.listdir("./cogs"):
+        if filename.endswith('.py') and not filename.startswith('_'):
+            try:
+                await bot.load_extension(f'cogs.{filename[:-3]}')
+                print(f"✅ Módulo {filename} cargado correctamente")
+            except Exception as e:
+                print(f"❌ Error al cargar {filename}: {e}")
+
+@bot.command()
+async def sync(ctx):
+    """Sincroniza los comandos con Discord (solo para admins)"""
+    if ctx.author.guild_permissions.administrator:
+        await bot.tree.sync()
+        await ctx.send("✅ Comandos sincronizados")
+    else:
+        await ctx.send("❌ No tienes permisos para esto")
 
 async def main():
     async with bot:
